@@ -1,22 +1,26 @@
 import socket
-import json
-sock = socket.socket()
+import utils
+import jim
+import argparse
 
-sock.connect(('localhost', 7777))
+parser = argparse.ArgumentParser("My client parser")
 
+parser.add_argument("host", type=str, help="Host of server")
+parser.add_argument("port", type=int, help="Port of server")
+parser.add_argument("mode", type=str, help="Mode of client")
 
-result = ""
+args = parser.parse_args()
 
-while True:
-    data = sock.recv(1024)
-    if len(data) == 0:
-        break
+with utils.create_tcp_client_socket(args.host, args.port) as s:
+    if args.mode == "r":
+        print("Enter in read socket")
+        while True:
+            msg = s.recv(1024)
 
-    result = data.decode("utf-8")
+            print(utils.bytes_to_str(msg))
+    else:
+        print("Enter in write socket")
 
-sock.close()
-
-
-print(json.loads(result))
-
-
+        user = input("Input user: ")
+        status = input("Input status: ")
+        s.send(utils.str_to_bytes(jim.get_presence_message(user, status)))
